@@ -22,6 +22,9 @@ class ASnowShooterProjectile : public AActor
 public:
 	ASnowShooterProjectile();
 
+	/** Type of damage to apply when hitting a surface. */
+	TSubclassOf<class UDamageType> DamageType;
+
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

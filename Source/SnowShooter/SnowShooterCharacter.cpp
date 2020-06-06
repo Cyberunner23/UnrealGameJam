@@ -168,7 +168,8 @@ void ASnowShooterCharacter::OnFire()
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				auto a = World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				a->DamageType = IceDamageType; // always shoot ice (temporary)
 			}
 		}
 	}
