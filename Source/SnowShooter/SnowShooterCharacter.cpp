@@ -145,6 +145,12 @@ void ASnowShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void ASnowShooterCharacter::OnFire()
 {
+	// Tell the server to shoot!
+	Server_OnFire();
+}
+
+void ASnowShooterCharacter::Server_OnFire_Implementation()
+{
 	// try and fire a projectile
 	if (ProjectileClass != NULL)
 	{
@@ -173,6 +179,12 @@ void ASnowShooterCharacter::OnFire()
 			}
 		}
 	}
+
+	// Trigger sounds etc for everyone.
+	Multicast_OnFire();
+}
+
+void ASnowShooterCharacter::Multicast_OnFire_Implementation() {
 
 	// try and play the sound if specified
 	if (FireSound != NULL)

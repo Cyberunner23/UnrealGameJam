@@ -101,6 +101,13 @@ protected:
 	/** Fires a projectile. */
 	void OnFire();
 
+	/** Fires a projectile on the server. */
+	UFUNCTION(Server, Reliable)
+	void Server_OnFire();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_OnFire();
+
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
 
