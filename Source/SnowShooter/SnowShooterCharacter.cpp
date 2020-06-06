@@ -11,6 +11,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
+
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -216,6 +221,44 @@ void ASnowShooterCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const 
 	TouchItem.bIsPressed = false;
 }
 
+bool ASnowShooterCharacter::IsAlly(AController* const OtherPlayer) const
+{
+	// TODO: Add team index to player controller class
+	return false;
+}
+
+void ASnowShooterCharacter::BeginFreeze()
+{
+	if (bIsFrozen)
+		// Don't allow duplicate freezes.
+		return;
+
+	bIsFrozen = true;
+	OnRep_IsFrozen(); // must be called manually for server
+
+	// Stop movement.
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();
+
+	GetWorld()->GetTimerManager().SetTimer(FreezeTimer, [this] { EndFreeze(); }, FreezeDuration, false);
+}
+
+void ASnowShooterCharacter::EndFreeze()
+{
+	bIsFrozen = false;
+	OnRep_IsFrozen(); // must be called manually for server
+
+	// Allow movement again.
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetWorld()->GetTimerManager().ClearTimer(FreezeTimer);
+}
+
+void ASnowShooterCharacter::OnRep_IsFrozen()
+{
+	// TODO: Show/hide a giant ice cube mesh around the player
+}
+
+
 //Commenting this section out to be consistent with FPS BP template.
 //This allows the user to turn without using the right virtual joystick
 
@@ -295,6 +338,35 @@ bool ASnowShooterCharacter::EnableTouchscreenMovement(class UInputComponent* Pla
 		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ASnowShooterCharacter::TouchUpdate);
 		return true;
 	}
-	
+
 	return false;
+}
+
+void ASnowShooterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASnowShooterCharacter, bIsFrozen);
+}
+
+float ASnowShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// This is only ever called on the server. (I think)
+
+	// Get damage amount from parent (usually returns the same value as DamageAmount)
+	const float DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (IsAlly(EventInstigator))
+	{
+		if (DamageEvent.DamageTypeClass == FireDamageType)
+		{
+			// Received friendly fire blast.
+		}
+	}
+	else if (DamageEvent.DamageTypeClass == IceDamageType)
+	{
+		// Received enemy ice blast.
+	}
+
+	return DamageToApply;
 }
