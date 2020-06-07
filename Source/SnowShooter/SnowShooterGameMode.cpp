@@ -3,6 +3,7 @@
 #include "SnowShooterGameMode.h"
 #include "SnowShooterHUD.h"
 #include "SnowShooterCharacter.h"
+#include "SnowShooterPlayerState.h"
 #include "UObject/ConstructorHelpers.h"
 
 ASnowShooterGameMode::ASnowShooterGameMode()
@@ -14,4 +15,6 @@ ASnowShooterGameMode::ASnowShooterGameMode()
 
 	// use our custom HUD class
 	HUDClass = ASnowShooterHUD::StaticClass();
+
+	PlayerStateClass = ASnowShooterPlayerState::StaticClass();
 }
