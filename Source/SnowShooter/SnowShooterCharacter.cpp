@@ -298,6 +298,8 @@ void ASnowShooterCharacter::OnRep_IsFrozen()
 			EnableInput(PlayerController);
 	}
 
+	// Allow blueprints to add menus here.
+	OnFreezeChangedMulticast();
 }
 
 

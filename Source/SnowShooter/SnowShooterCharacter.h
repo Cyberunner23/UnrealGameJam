@@ -119,6 +119,10 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_OnFire();
 
+	/** Called when a freeze or unfreeze event occurred. */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnFreezeChangedMulticast();
+
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
 
