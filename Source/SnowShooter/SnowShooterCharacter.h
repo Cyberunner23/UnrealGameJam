@@ -45,6 +45,10 @@ class ASnowShooterCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
+	/** Ice cube mesh encasing player while frozen */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* IceCubeMesh;
+
 public:
 	ASnowShooterCharacter();
 
@@ -146,9 +150,11 @@ protected:
 	bool IsAlly(AController* const OtherPlayer) const;
 
 	/** Engage freeze mode, stopping movement for a little time. */
+	UFUNCTION(Server, Reliable)
 	void BeginFreeze();
 
 	/** End freeze mode, allowing movement again. */
+	UFUNCTION(Server, Reliable)
 	void EndFreeze();
 
 	/** Called when bIsFrozen changes. */
