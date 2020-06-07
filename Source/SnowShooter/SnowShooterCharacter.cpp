@@ -286,8 +286,18 @@ void ASnowShooterCharacter::EndFreeze_Implementation()
 void ASnowShooterCharacter::OnRep_IsFrozen()
 {
 	// Show/hide a giant ice cube mesh around the player
-	//IceCubeMesh->bHiddenInGame = ;
 	IceCubeMesh->SetHiddenInGame(!bIsFrozen);
+
+	auto PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController == GetController())
+	{
+		// Disable/enable input if we are the local player
+		if (bIsFrozen)
+			DisableInput(PlayerController);
+		else
+			EnableInput(PlayerController);
+	}
+
 }
 
 
