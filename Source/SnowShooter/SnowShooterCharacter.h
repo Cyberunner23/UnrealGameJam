@@ -80,10 +80,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
 
+	/** Whether the player has been frozen. */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_IsFrozen, Category = Gameplay)
+	uint32 bIsFrozen : 1;
+
+	/** How long to freeze player when hit with ice, in seconds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float FreezeDuration;
+
+	/** Damage type when ice gun is shot. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	TSubclassOf<class UDamageType> IceDamageType;
+
+	/** Damage type when fire gun is shot. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	TSubclassOf<class UDamageType> FireDamageType;
+
 protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
+
+	/** Fires a projectile on the server. */
+	UFUNCTION(Server, Reliable)
+	void Server_OnFire();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_OnFire();
 
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
@@ -118,6 +141,22 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	TouchData	TouchItem;
+
+	/** Returns whether the player is friendly to this character. */
+	bool IsAlly(AController* const OtherPlayer) const;
+
+	/** Engage freeze mode, stopping movement for a little time. */
+	void BeginFreeze();
+
+	/** End freeze mode, allowing movement again. */
+	void EndFreeze();
+
+	/** Called when bIsFrozen changes. */
+	UFUNCTION()
+	void OnRep_IsFrozen();
+
+	/** [server] Timer between getting hit with ice blast and becoming unstuck. */
+	FTimerHandle FreezeTimer;
 	
 protected:
 	// APawn interface
@@ -131,6 +170,12 @@ protected:
 	 * @returns true if touch controls were enabled.
 	 */
 	bool EnableTouchscreenMovement(UInputComponent* InputComponent);
+
+public:
+	// AActor interface
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
+	// End of AActor interface
 
 public:
 	/** Returns Mesh1P subobject **/

@@ -4,7 +4,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 
-ASnowShooterProjectile::ASnowShooterProjectile() 
+ASnowShooterProjectile::ASnowShooterProjectile()
 {
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -29,15 +29,29 @@ ASnowShooterProjectile::ASnowShooterProjectile()
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+
+	bReplicates = true;
 }
 
 void ASnowShooterProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
+	if (OtherActor != nullptr && OtherActor != this)
 	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+		// Apply damage if we hit a player.
+		auto Player = Cast<APawn>(OtherActor);
+		if (Player)
+		{
+			FDamageEvent DamageEvent{ DamageType };
+			// The damage amount isn't really important to our game, but the damage type is all important.
+			Player->TakeDamage(1.f, DamageEvent, (AController*)GetOwner(), this);
+		}
+		else
+		{
+			// Hit some random surface.
+			// TODO: Add ice mini platform creation here.
+		}
 
+		// Destroy every time we hit something.
 		Destroy();
 	}
 }
