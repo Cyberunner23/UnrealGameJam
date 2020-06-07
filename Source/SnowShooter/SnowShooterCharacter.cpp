@@ -131,6 +131,7 @@ void ASnowShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASnowShooterCharacter::OnFire);
+	PlayerInputComponent->BindAction("FireAlt", IE_Pressed, this, &ASnowShooterCharacter::OnFireAlt);
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -152,24 +153,32 @@ void ASnowShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void ASnowShooterCharacter::OnFire()
 {
-	// Tell the server to shoot!
-	Server_OnFire();
+	// Tell the server to shoot ice blast!
+	Server_OnFire(false);
 }
 
-void ASnowShooterCharacter::Server_OnFire_Implementation()
+void ASnowShooterCharacter::OnFireAlt()
+{
+	// Tell the server to shoot fire ball!
+	Server_OnFire(true);
+}
+
+void ASnowShooterCharacter::Server_OnFire_Implementation(const bool bAltFire)
 {
 	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	if (ProjectileClass != NULL && AltProjectileClass != NULL)
 	{
+		auto ClassToSpawn = bAltFire ? AltProjectileClass : ProjectileClass;
+
 		UWorld* const World = GetWorld();
 		if (World != NULL)
 		{
-			ASnowShooterProjectile* Projectile;
+			ASnowShooterProjectile* Spawned;
 			if (bUsingMotionControllers)
 			{
 				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
 				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				Projectile = World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				Spawned = World->SpawnActor<ASnowShooterProjectile>(ClassToSpawn, SpawnLocation, SpawnRotation);
 			}
 			else
 			{
@@ -182,10 +191,9 @@ void ASnowShooterCharacter::Server_OnFire_Implementation()
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				Projectile = World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				Spawned = World->SpawnActor<ASnowShooterProjectile>(ClassToSpawn, SpawnLocation, SpawnRotation, ActorSpawnParams);
 			}
-			Projectile->SetOwner(GetController()); // owned by this player's controller
-			Projectile->DamageType = IceDamageType; // always shoot ice (temporary)
+			Spawned->SetOwner(GetController()); // owned by this player's controller
 		}
 	}
 

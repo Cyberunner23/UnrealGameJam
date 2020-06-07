@@ -72,6 +72,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class ASnowShooterProjectile> ProjectileClass;
 
+	/** Projectile class to spawn for alt fire mode */
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class ASnowShooterProjectile> AltProjectileClass;
+
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	class USoundBase* FireSound;
@@ -104,10 +108,13 @@ protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
+	
+	/** Fires an alternative projectile (ice/fire). */
+	void OnFireAlt();
 
 	/** Fires a projectile on the server. */
 	UFUNCTION(Server, Reliable)
-	void Server_OnFire();
+	void Server_OnFire(const bool bAltFire);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_OnFire();

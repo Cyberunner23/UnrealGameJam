@@ -23,6 +23,7 @@ public:
 	ASnowShooterProjectile();
 
 	/** Type of damage to apply when hitting a surface. */
+	UPROPERTY(EditAnywhere, Category = Gameplay)
 	TSubclassOf<class UDamageType> DamageType;
 
 	/** called when projectile hits something */
