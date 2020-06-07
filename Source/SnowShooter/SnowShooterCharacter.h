@@ -45,6 +45,10 @@ class ASnowShooterCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
+	/** Ice cube mesh encasing player while frozen */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* IceCubeMesh;
+
 public:
 	ASnowShooterCharacter();
 
@@ -67,6 +71,10 @@ public:
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class ASnowShooterProjectile> ProjectileClass;
+
+	/** Projectile class to spawn for alt fire mode */
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class ASnowShooterProjectile> AltProjectileClass;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
@@ -100,13 +108,20 @@ protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
+	
+	/** Fires an alternative projectile (ice/fire). */
+	void OnFireAlt();
 
 	/** Fires a projectile on the server. */
 	UFUNCTION(Server, Reliable)
-	void Server_OnFire();
+	void Server_OnFire(const bool bAltFire);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_OnFire();
+
+	/** Called when a freeze or unfreeze event occurred. */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnFreezeChangedMulticast();
 
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
@@ -146,9 +161,11 @@ protected:
 	bool IsAlly(AController* const OtherPlayer) const;
 
 	/** Engage freeze mode, stopping movement for a little time. */
+	UFUNCTION(Server, Reliable)
 	void BeginFreeze();
 
 	/** End freeze mode, allowing movement again. */
+	UFUNCTION(Server, Reliable)
 	void EndFreeze();
 
 	/** Called when bIsFrozen changes. */

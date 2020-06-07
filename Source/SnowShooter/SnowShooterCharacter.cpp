@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -87,6 +88,12 @@ ASnowShooterCharacter::ASnowShooterCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+
+	// Add ice cube mesh.
+	IceCubeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IceCubeMesh"));
+	IceCubeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // ignore collisions
+	IceCubeMesh->bHiddenInGame = true; // hide initially
+	IceCubeMesh->SetupAttachment(RootComponent);
 }
 
 void ASnowShooterCharacter::BeginPlay()
@@ -124,6 +131,7 @@ void ASnowShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASnowShooterCharacter::OnFire);
+	PlayerInputComponent->BindAction("FireAlt", IE_Pressed, this, &ASnowShooterCharacter::OnFireAlt);
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -145,23 +153,32 @@ void ASnowShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void ASnowShooterCharacter::OnFire()
 {
-	// Tell the server to shoot!
-	Server_OnFire();
+	// Tell the server to shoot ice blast!
+	Server_OnFire(false);
 }
 
-void ASnowShooterCharacter::Server_OnFire_Implementation()
+void ASnowShooterCharacter::OnFireAlt()
+{
+	// Tell the server to shoot fire ball!
+	Server_OnFire(true);
+}
+
+void ASnowShooterCharacter::Server_OnFire_Implementation(const bool bAltFire)
 {
 	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	if (ProjectileClass != NULL && AltProjectileClass != NULL)
 	{
+		auto ClassToSpawn = bAltFire ? AltProjectileClass : ProjectileClass;
+
 		UWorld* const World = GetWorld();
 		if (World != NULL)
 		{
+			ASnowShooterProjectile* Spawned;
 			if (bUsingMotionControllers)
 			{
 				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
 				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				Spawned = World->SpawnActor<ASnowShooterProjectile>(ClassToSpawn, SpawnLocation, SpawnRotation);
 			}
 			else
 			{
@@ -174,9 +191,9 @@ void ASnowShooterCharacter::Server_OnFire_Implementation()
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				auto a = World->SpawnActor<ASnowShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-				a->DamageType = IceDamageType; // always shoot ice (temporary)
+				Spawned = World->SpawnActor<ASnowShooterProjectile>(ClassToSpawn, SpawnLocation, SpawnRotation, ActorSpawnParams);
 			}
+			Spawned->SetOwner(GetController()); // owned by this player's controller
 		}
 	}
 
@@ -240,7 +257,7 @@ bool ASnowShooterCharacter::IsAlly(AController* const OtherPlayer) const
 	return false;
 }
 
-void ASnowShooterCharacter::BeginFreeze()
+void ASnowShooterCharacter::BeginFreeze_Implementation()
 {
 	if (bIsFrozen)
 		// Don't allow duplicate freezes.
@@ -256,7 +273,7 @@ void ASnowShooterCharacter::BeginFreeze()
 	GetWorld()->GetTimerManager().SetTimer(FreezeTimer, [this] { EndFreeze(); }, FreezeDuration, false);
 }
 
-void ASnowShooterCharacter::EndFreeze()
+void ASnowShooterCharacter::EndFreeze_Implementation()
 {
 	bIsFrozen = false;
 	OnRep_IsFrozen(); // must be called manually for server
@@ -268,7 +285,21 @@ void ASnowShooterCharacter::EndFreeze()
 
 void ASnowShooterCharacter::OnRep_IsFrozen()
 {
-	// TODO: Show/hide a giant ice cube mesh around the player
+	// Show/hide a giant ice cube mesh around the player
+	IceCubeMesh->SetHiddenInGame(!bIsFrozen);
+
+	auto PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController == GetController())
+	{
+		// Disable/enable input if we are the local player
+		if (bIsFrozen)
+			DisableInput(PlayerController);
+		else
+			EnableInput(PlayerController);
+	}
+
+	// Allow blueprints to add menus here.
+	OnFreezeChangedMulticast();
 }
 
 
@@ -374,11 +405,13 @@ float ASnowShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 		if (DamageEvent.DamageTypeClass == FireDamageType)
 		{
 			// Received friendly fire blast.
+			EndFreeze();
 		}
 	}
 	else if (DamageEvent.DamageTypeClass == IceDamageType)
 	{
 		// Received enemy ice blast.
+		BeginFreeze();
 	}
 
 	return DamageToApply;
