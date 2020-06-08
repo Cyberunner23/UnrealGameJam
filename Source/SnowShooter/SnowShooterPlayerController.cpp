@@ -24,7 +24,6 @@ void ASnowShooterPlayerController::SetTeamFromMenu_Implementation(int NewTeamInd
 		// RestartPlayer wasn't working ;( so set the transform manually.
 		// Won't actually create a new pawn though!
 		auto SpawnTransform = GetWorld()->GetAuthGameMode()->FindPlayerStart(this)->GetActorTransform();
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Hello %s World"), *SpawnTransform.ToString()));
 		SpawnTransform.SetScale3D({ 1.f, 1.f, 1.f });
 		GetPawn()->SetActorTransform(SpawnTransform);
 	}
