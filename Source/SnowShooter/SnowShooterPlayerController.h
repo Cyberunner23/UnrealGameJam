@@ -13,5 +13,9 @@ UCLASS()
 class SNOWSHOOTER_API ASnowShooterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+		/** Sets the team index from the menu. */
+		UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable)
+		void SetTeamFromMenu(int NewTeamIndex);
 	
 };

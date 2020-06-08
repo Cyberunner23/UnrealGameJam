@@ -19,7 +19,12 @@ class SNOWSHOOTER_API ASnowShooterPlayerState : public APlayerState
 public:
 
 	/** Team the player is on. */
-	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = Gameplay)
 	int32 TeamIndex;
+
+public:
+	// AActor interface
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	// End of AActor interface
 
 };
