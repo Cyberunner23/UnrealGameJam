@@ -4,6 +4,7 @@
 #include "SnowShooterHUD.h"
 #include "SnowShooterCharacter.h"
 #include "SnowShooterPlayerState.h"
+#include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
 
 ASnowShooterGameMode::ASnowShooterGameMode()
@@ -17,4 +18,15 @@ ASnowShooterGameMode::ASnowShooterGameMode()
 	HUDClass = ASnowShooterHUD::StaticClass();
 
 	PlayerStateClass = ASnowShooterPlayerState::StaticClass();
+
+	// I'll hard code the player controller just to be consistent with the above.
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassFinder(TEXT("/Game/SnowShooter/Core/BP_SnowShooterPlayerController"));
+	PlayerControllerClass = PlayerControllerClassFinder.Class;
+}
+
+AActor* ASnowShooterGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
+{
+	const auto PlayerState = Player->GetPlayerState<ASnowShooterPlayerState>();
+	const auto& PlayerStartTag = FString::Printf(TEXT("Team%d"), PlayerState->TeamIndex);
+	return Super::FindPlayerStart_Implementation(Player, PlayerStartTag);
 }

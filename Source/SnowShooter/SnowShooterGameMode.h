@@ -13,7 +13,7 @@ class ASnowShooterGameMode : public AGameModeBase
 
 public:
 	ASnowShooterGameMode();
+
+	/** Find a player start for the player's team */
+	AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT(""));
 };
-
-
-
