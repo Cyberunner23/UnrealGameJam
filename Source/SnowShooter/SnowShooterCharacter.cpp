@@ -2,6 +2,7 @@
 
 #include "SnowShooterCharacter.h"
 #include "SnowShooterProjectile.h"
+#include "SnowShooterPlayerState.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -253,8 +254,9 @@ void ASnowShooterCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const 
 
 bool ASnowShooterCharacter::IsAlly(AController* const OtherPlayer) const
 {
-	// TODO: Add team index to player controller class
-	return false;
+	auto a = GetPlayerState<ASnowShooterPlayerState>();
+	auto b = OtherPlayer->GetPlayerState<ASnowShooterPlayerState>();
+	return a->TeamIndex == b->TeamIndex;
 }
 
 void ASnowShooterCharacter::BeginFreeze_Implementation()
