@@ -14,6 +14,21 @@ class ASnowShooterGameMode : public AGameModeBase
 public:
 	ASnowShooterGameMode();
 
+	/** Length of match in seconds. */
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+	float MatchDuration;
+
+	/** Start the match. */
+	void StartMatch();
+
+	/** End the match. */
+	void EndMatch();
+
 	/** Find a player start for the player's team */
 	AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT(""));
+
+protected:
+protected:
+	virtual void BeginPlay() override;
+
 };

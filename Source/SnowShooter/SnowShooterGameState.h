@@ -21,6 +21,12 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category=Gameplay)
 	TArray<int> FlagOccupiers;
 
+	/** Timer for the match to end. */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category=Gameplay)
+	FTimerHandle MatchTimer;
+
+	float GetMatchTimeRemaining();
+
 public:
 	// AActor interface
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;

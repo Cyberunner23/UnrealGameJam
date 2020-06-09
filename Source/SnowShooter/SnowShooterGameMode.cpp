@@ -7,9 +7,12 @@
 #include "SnowShooterGameState.h"
 #include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
 
 ASnowShooterGameMode::ASnowShooterGameMode()
 	: Super()
+	, MatchDuration(180.f) // 3mins
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPersonCPP/Blueprints/FirstPersonCharacter"));
@@ -31,4 +34,20 @@ AActor* ASnowShooterGameMode::FindPlayerStart_Implementation(AController* Player
 	const auto PlayerState = Player->GetPlayerState<ASnowShooterPlayerState>();
 	const auto& PlayerStartTag = FString::Printf(TEXT("Team%d"), PlayerState->TeamIndex);
 	return Super::FindPlayerStart_Implementation(Player, PlayerStartTag);
+}
+
+void ASnowShooterGameMode::StartMatch()
+{
+	auto A = GetGameState<ASnowShooterGameState>();
+	GetWorld()->GetTimerManager().SetTimer(A->MatchTimer, [this] { EndMatch(); }, MatchDuration, false);
+}
+
+void ASnowShooterGameMode::EndMatch()
+{
+}
+
+void ASnowShooterGameMode::BeginPlay()
+{
+	// Start match immediately. Players can still join a team at any time.
+	StartMatch();
 }
