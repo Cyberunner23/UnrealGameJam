@@ -4,6 +4,7 @@
 #include "SnowShooterHUD.h"
 #include "SnowShooterCharacter.h"
 #include "SnowShooterPlayerState.h"
+#include "SnowShooterGameState.h"
 #include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -18,6 +19,7 @@ ASnowShooterGameMode::ASnowShooterGameMode()
 	HUDClass = ASnowShooterHUD::StaticClass();
 
 	PlayerStateClass = ASnowShooterPlayerState::StaticClass();
+	GameStateClass = ASnowShooterGameState::StaticClass();
 
 	// I'll hard code the player controller just to be consistent with the above.
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassFinder(TEXT("/Game/SnowShooter/Core/BP_SnowShooterPlayerController"));
