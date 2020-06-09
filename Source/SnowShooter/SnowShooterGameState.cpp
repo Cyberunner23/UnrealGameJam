@@ -15,9 +15,18 @@ float ASnowShooterGameState::GetMatchTimeRemaining()
 	return GetWorld()->GetTimerManager().GetTimerRemaining(MatchTimer);
 }
 
+void ASnowShooterGameState::Tick(float DeltaTime)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		MatchTimeRemaining = GetMatchTimeRemaining();
+	}
+}
+
 void ASnowShooterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASnowShooterGameState, FlagOccupiers);
+	DOREPLIFETIME(ASnowShooterGameState, MatchTimeRemaining);
 }
