@@ -48,6 +48,9 @@ void ASnowShooterGameMode::EndMatch()
 
 void ASnowShooterGameMode::BeginPlay()
 {
-	// Start match immediately. Players can still join a team at any time.
-	StartMatch();
+	Super::BeginPlay();
+
+	FTimerHandle NoTimer;
+	// Start match after a short delay to let other objects get initialized. Players can still join a team at any time.
+	GetWorld()->GetTimerManager().SetTimer(NoTimer, [this] { StartMatch(); }, 0.2f, false);
 }

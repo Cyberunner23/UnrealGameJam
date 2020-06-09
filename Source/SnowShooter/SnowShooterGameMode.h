@@ -28,7 +28,6 @@ public:
 	AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT(""));
 
 protected:
-protected:
 	virtual void BeginPlay() override;
 
 };
