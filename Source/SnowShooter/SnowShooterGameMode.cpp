@@ -72,12 +72,14 @@ void ASnowShooterGameMode::EndMatch()
 	_GameState->WinningTeam = Winner;
 
 	// Load the restart match map after a short delay.
+	bUseSeamlessTravel = false;
 	auto RestartMatch = [this] {
-		GetWorld()->ServerTravel(this->RestartMatchMap);
+		// For some reason the listen server's character gets stuck with server travel.
+		GetWorld()->ServerTravel(this->RestartMatchMap, true);
 	};
 
 	FTimerHandle NoTimer;
-	GetWorld()->GetTimerManager().SetTimer(NoTimer, RestartMatch, 10.f, false);
+	GetWorld()->GetTimerManager().SetTimer(NoTimer, RestartMatch, 3.f, false);
 }
 
 void ASnowShooterGameMode::BeginPlay()
