@@ -18,6 +18,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = Gameplay)
 	float MatchDuration;
 
+	/** Name of map to open when restarting match. */
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+	FString RestartMatchMap;
+
 	/** Start the match. */
 	void StartMatch();
 

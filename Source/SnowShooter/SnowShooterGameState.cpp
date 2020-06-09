@@ -8,6 +8,7 @@
 
 ASnowShooterGameState::ASnowShooterGameState()
 	: FlagOccupiers{ -1, -1, -1 } // 3 flags to capture, initially unset team index -1
+	, WinningTeam(-1) // no one won yet!
 {
 	PrimaryActorTick.bCanEverTick = true;
 }

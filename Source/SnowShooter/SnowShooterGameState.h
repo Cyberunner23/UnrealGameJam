@@ -28,6 +28,10 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
 	float MatchTimeRemaining;
 
+	/** Team that won the game. -1 means no winner yet. */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
+	int WinningTeam;
+
 	// Called every frame.
 	void Tick(float DeltaTime);
 

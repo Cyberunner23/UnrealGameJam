@@ -44,6 +44,40 @@ void ASnowShooterGameMode::StartMatch()
 
 void ASnowShooterGameMode::EndMatch()
 {
+	int Team1Count = 0, Team2Count = 0;
+	auto _GameState = GetWorld()->GetGameState<ASnowShooterGameState>();
+	for (const auto FlagTeam : _GameState->FlagOccupiers)
+	{
+		switch (FlagTeam)
+		{
+		case 0:
+			Team1Count++;
+			break;
+		case 1:
+			Team2Count++;
+			break;
+		}
+	}
+	int Winner;
+	if (Team1Count > Team2Count)
+		Winner = 0;
+	else if (Team2Count > Team1Count)
+		Winner = 1;
+	else
+		// Unlikely, both teams had the same number of flags, but give team 0 the victory.
+		// So long as the world has an odd number of flags this probably wouldn't happen!
+		Winner = 0;
+
+	// Set winner in game state for clients to see.
+	_GameState->WinningTeam = Winner;
+
+	// Load the restart match map after a short delay.
+	auto RestartMatch = [this] {
+		GetWorld()->ServerTravel(this->RestartMatchMap);
+	};
+
+	FTimerHandle NoTimer;
+	GetWorld()->GetTimerManager().SetTimer(NoTimer, RestartMatch, 10.f, false);
 }
 
 void ASnowShooterGameMode::BeginPlay()
